@@ -1,6 +1,8 @@
 import socket
 import sys
 import traceback
+import re
+import pathlib
 import os
 import mimetypes
 
@@ -54,8 +56,13 @@ class HttpServer():
 
         Then you would return "/images/sample_1.png"
         """
+        try:
+            found_path = re.search('GET (.+?) HTTP', request).group(1)
+        except AttributeError:
+            # 'GET ', ' HTTP' not found in the request
+            return b"'GET ', ' HTTP' not found in the request!"
 
-        return "TODO: COMPLETE THIS"  # TODO
+        return found_path
 
 
     @staticmethod
@@ -87,8 +94,20 @@ class HttpServer():
 
         if path.endswith('/'):
             return b"text/plain"
+        if path.endswith('.png'):
+            return b"image/png"
+        if path.endswith('.html'):
+            return b"text/html"
+        if path.endswith('.ico'):
+            return b"image/ico"
+        if path.endswith('.py'):
+            return b"text/plain"
+        if path.endswith('.txt'):
+            return b"text/plain"
+        if path.endswith('.jpg'):
+            return b"image/jpeg"
         else:
-            return b"TODO: FINISH THE REST OF THESE CASES"  # TODO
+            return b"Unknown mimetype"
 
     @staticmethod
     def get_content(path):
@@ -123,8 +142,24 @@ class HttpServer():
             # The file `webroot/a_page_that_doesnt_exist.html`) doesn't exist,
             # so this should raise a FileNotFoundError.
         """
+        cwd = pathlib.Path.cwd() / 'webroot'
+        path = str(cwd) + path
+        print(path)
 
-        return b"Not implemented!"  # TODO: Complete this function.
+        if os.path.exists(path):
+            if os.path.isdir(path):
+                listToStr = ' '.join([str(elem + '\n') for elem in \
+                        os.listdir(path)])
+                return bytes(listToStr, 'utf-8')
+            if os.path.isfile(path):
+                file = open(path, "rb")
+                output = file.read()
+                return output
+                file.close()
+        else:
+            raise FileNotFoundError
+
+
 
     def __init__(self, port):
         self.port = port
