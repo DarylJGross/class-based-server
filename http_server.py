@@ -154,8 +154,9 @@ class HttpServer():
             if os.path.isfile(path):
                 file = open(path, "rb")
                 output = file.read()
-                return output
                 file.close()
+                return output
+                
         else:
             raise FileNotFoundError
 
